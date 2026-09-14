@@ -11,14 +11,30 @@ OVERLAP = 100
 
 
 def clean_text(text):
-    """Clean unnecessary whitespace from extracted PDF text."""
+    """Clean unnecessary whitespace."""
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
 
-def split_into_paragraphs(text):
-    """Split page text into paragraphs."""
-    return [p.strip() for p in text.split("\n\n") if p.strip()]
+def is_references_section(text):
+    """
+    Detect whether a page has entered the references/bibliography section.
+    """
+    text_lower = text.lower().strip()
+
+    patterns = [
+        r"^references$",
+        r"^references\s*$",
+        r"^bibliography$",
+        r"^literature cited$",
+        r"^reference list$",
+    ]
+
+    for pattern in patterns:
+        if re.search(pattern, text_lower, re.MULTILINE):
+            return True
+
+    return False
 
 
 def create_chunks(text, chunk_size=CHUNK_SIZE, overlap=OVERLAP):
@@ -49,13 +65,22 @@ def process_paper(json_file):
     paper_id = json_file.stem
 
     all_chunks = []
+    references_found = False
 
     for page in pages:
         page_number = page["page"]
-        text = clean_text(page["text"])
+        raw_text = page["text"]
 
-        if not text:
+        if not raw_text.strip():
             continue
+
+        # Check whether this page begins the references section
+        if is_references_section(raw_text):
+            print(f"  References detected on page {page_number}.")
+            references_found = True
+            break
+
+        text = clean_text(raw_text)
 
         chunks = create_chunks(text)
 
@@ -78,7 +103,7 @@ def main():
         if f.name != "chunks.jsonl"
     ]
 
-    print(f"Found {len(json_files)} papers.")
+    print(f"Found {len(json_files)} papers.\n")
 
     all_chunks = []
 
@@ -88,13 +113,13 @@ def main():
         chunks = process_paper(json_file)
         all_chunks.extend(chunks)
 
-        print(f"  Created {len(chunks)} chunks.")
+        print(f"  Created {len(chunks)} chunks.\n")
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         for chunk in all_chunks:
             f.write(json.dumps(chunk, ensure_ascii=False) + "\n")
 
-    print("\nFinished.")
+    print("Finished.")
     print(f"Total chunks: {len(all_chunks)}")
     print(f"Saved to: {OUTPUT_FILE}")
 
