@@ -2,6 +2,7 @@ from src.agent.router import route_query
 from src.retrieval.hybrid_search import hybrid_search
 from src.data_tools.ocean_data import OceanDataTool
 from src.agent.data_agent import parse_data_query
+from src.agent.generator import generate_answer
 
 
 # ============================================================
@@ -18,13 +19,9 @@ ocean_data_tool = OceanDataTool(
 # ============================================================
 
 def run_paper_tool(query):
-
     print("\n[AGENT] Running paper retrieval...")
 
-    results = hybrid_search(
-        query,
-        final_k=5
-    )
+    results = hybrid_search(query, final_k=5)
 
     return results
 
@@ -99,86 +96,50 @@ def run_data_tool(query):
 # ============================================================
 
 def run_agent(query):
+    print("\n==============================")
+    print("        AGENT START")
+    print("==============================")
 
-    print("\n========================================")
-    print("AGENT")
-    print("========================================")
-
-    # --------------------------------------------------------
-    # STEP 1 — ROUTE QUERY
-    # --------------------------------------------------------
-
+    # Step 1: Decide which tool(s) are needed
     route = route_query(query)
 
-    print(
-        f"\n[AGENT] Selected route: {route}"
-    )
+    print(f"\n[AGENT] Route: {route}")
 
-    # --------------------------------------------------------
-    # STEP 2 — PAPER
-    # --------------------------------------------------------
+    # Initialize evidence
+    paper_evidence = []
+    data_evidence = {}
 
+    # Step 2: Run the appropriate tool(s)
     if route == "PAPER":
-
-        paper_results = run_paper_tool(
-            query
-        )
-
-        return {
-            "query": query,
-            "route": route,
-            "paper_evidence": paper_results,
-            "data_evidence": None
-        }
-
-    # --------------------------------------------------------
-    # STEP 3 — DATA
-    # --------------------------------------------------------
+        paper_evidence = run_paper_tool(query)
 
     elif route == "DATA":
-
-        data_results = run_data_tool(
-            query
-        )
-
-        return {
-            "query": query,
-            "route": route,
-            "paper_evidence": None,
-            "data_evidence": data_results
-        }
-
-    # --------------------------------------------------------
-    # STEP 4 — BOTH
-    # --------------------------------------------------------
+        data_evidence = run_data_tool(query)
 
     elif route == "BOTH":
-
-        paper_results = run_paper_tool(
-            query
-        )
-
-        data_results = run_data_tool(
-            query
-        )
-
-        return {
-            "query": query,
-            "route": route,
-            "paper_evidence": paper_results,
-            "data_evidence": data_results
-        }
-
-    # --------------------------------------------------------
-    # SAFETY CHECK
-    # --------------------------------------------------------
+        paper_evidence = run_paper_tool(query)
+        data_evidence = run_data_tool(query)
 
     else:
+        raise ValueError(f"Invalid route returned by router: {route}")
 
-        raise ValueError(
-            f"Unknown route: {route}"
-        )
+    # Step 3: Generate a grounded answer using only tool evidence
+    print("\n[AGENT] Generating grounded answer...")
 
+    answer = generate_answer(
+        query=query,
+        paper_evidence=paper_evidence,
+        data_evidence=data_evidence
+    )
+
+    # Step 4: Return the complete agent result
+    return {
+        "query": query,
+        "route": route,
+        "paper_evidence": paper_evidence,
+        "data_evidence": data_evidence,
+        "answer": answer
+    }
 
 # ============================================================
 # TEST
@@ -276,6 +237,26 @@ if __name__ == "__main__":
                 print(
                     evidence["data_evidence"]
                 )
+
+            # ------------------------------------------------
+            # Final generated answer
+            # ------------------------------------------------
+
+            print(
+                "\n========================================"
+            )
+
+            print(
+                "FINAL ANSWER"
+            )
+
+            print(
+                "========================================"
+            )
+
+            print(
+                evidence["answer"]
+            )
 
         except Exception as e:
 
