@@ -1,9 +1,10 @@
+
 import json
 import os
+import re
 
 from dotenv import load_dotenv
 from groq import Groq
-
 
 
 load_dotenv()
@@ -18,43 +19,127 @@ client = Groq(
 SYSTEM_PROMPT = """
 You are a scientific research assistant.
 
-Your job is to answer the user's question using ONLY the evidence
-provided to you.
+Answer the user's question using ONLY the supplied evidence.
 
-You have two possible evidence sources:
-
-1. PAPER EVIDENCE
-   - Extracted from scientific papers.
-   - Each result contains paper_id, page, and text.
-
-2. DATA EVIDENCE
-   - Results calculated from a structured ocean dataset.
-   - These values are authoritative for the dataset.
+Paper evidence is provided with IDs such as [P1], [P2].
+These IDs map to actual retrieved paper chunks.
 
 STRICT RULES:
 
 - Do not use outside knowledge.
-- Do not invent facts, numbers, papers, pages, or citations.
-- Do not make claims that are unsupported by the provided evidence.
-- If the evidence is insufficient, explicitly say that the available
-  evidence is insufficient to answer the question.
-- When using paper evidence, mention the paper and page naturally.
-- When using data evidence, report the calculated values accurately.
-- If both paper and data evidence are provided, clearly distinguish
-  literature findings from dataset results.
-- Prefer concise, scientifically precise answers.
+- Do not invent facts, numbers, authors, paper titles, years, or pages.
+- Support scientific claims with the provided paper evidence IDs.
+- Cite paper evidence using exactly the supplied IDs, e.g. [P1].
+- Never write your own author-year-page citations.
+- Only use an ID if its evidence supports the claim.
+- Do not cite evidence that is irrelevant to the claim.
+- Use data evidence only for the dataset values it provides.
+- Clearly distinguish literature findings from dataset results.
+- If evidence is insufficient, say so explicitly.
+- Do not make unsupported claims.
+- Keep the answer concise and scientifically precise.
 
-Answer only the user's question.
+Return only the answer text, with evidence IDs where appropriate.
 """
 
 
-def generate_answer(query, paper_evidence=None, data_evidence=None):
+def prepare_paper_evidence(paper_evidence):
+    """
+    Assign stable IDs to the paper chunks for this answer.
+    Return both the ID-tagged evidence and an ID-to-source map.
+    """
+
+    tagged_evidence = []
+    source_map = {}
+
+    for i, result in enumerate(paper_evidence or [], start=1):
+        evidence_id = f"P{i}"
+
+        tagged_evidence.append({
+            "evidence_id": evidence_id,
+            "paper_id": result["paper_id"],
+            "page": result["page"],
+            "text": result["text"]
+        })
+
+        source_map[evidence_id] = {
+            "paper_id": result["paper_id"],
+            "page": result["page"]
+        }
+
+    return tagged_evidence, source_map
+
+
+def format_citations(answer, source_map):
+    """
+    Replace model-generated evidence IDs with verified source details.
+    Remove unknown IDs rather than treating them as valid citations.
+    """
+
+    used_ids = []
+
+    def replace_id(match):
+        evidence_id = match.group(1)
+
+        if evidence_id not in source_map:
+            return ""
+
+        if evidence_id not in used_ids:
+            used_ids.append(evidence_id)
+
+        source = source_map[evidence_id]
+
+        return (
+            f"[{evidence_id}: "
+            f"{source['paper_id']}, "
+            f"p. {source['page']}]"
+        )
+
+    formatted_answer = re.sub(
+        r"\[(P\d+)\]",
+        replace_id,
+        answer or ""
+    )
+
+    # Append a source list for traceability.
+    if used_ids:
+        formatted_answer += "\n\n**Sources**\n"
+
+        for evidence_id in used_ids:
+            source = source_map[evidence_id]
+
+            formatted_answer += (
+                f"\n- [{evidence_id}] "
+                f"{source['paper_id']}, "
+                f"page {source['page']}"
+            )
+
+    return formatted_answer
+
+def has_usable_evidence(paper_evidence, data_evidence):
+    """
+    Check whether any evidence was supplied to the generator.
+    """
+    has_papers = bool(paper_evidence)
+    has_data = bool(data_evidence)
+
+    return has_papers or has_data
+
+def generate_answer(
+    query,
+    paper_evidence=None,
+    data_evidence=None
+):
 
     paper_evidence = paper_evidence or []
     data_evidence = data_evidence or {}
 
+    tagged_papers, source_map = prepare_paper_evidence(
+        paper_evidence
+    )
+
     evidence = {
-        "paper_evidence": paper_evidence,
+        "paper_evidence": tagged_papers,
         "data_evidence": data_evidence
     }
 
@@ -63,9 +148,11 @@ USER QUESTION:
 {query}
 
 EVIDENCE:
-{json.dumps(evidence, indent=2)}
+{json.dumps(evidence, indent=2, ensure_ascii=False)}
 
-Using ONLY the evidence above, answer the user's question.
+Answer using ONLY this evidence.
+Use the supplied paper evidence IDs when citing paper-based claims.
+Do not create author-year-page citations.
 """
 
     response = client.chat.completions.create(
@@ -82,30 +169,28 @@ Using ONLY the evidence above, answer the user's question.
         ],
         temperature=0,
         reasoning_effort="none",
-        max_completion_tokens=500
+        max_completion_tokens=1400
     )
 
-    return response.choices[0].message.content
+    raw_answer = response.choices[0].message.content or ""
+
+    return format_citations(
+        raw_answer,
+        source_map
+    )
+
 
 if __name__ == "__main__":
 
-    test_query = "How does ENSO change under global warming?"
+    test_query = "What does the evidence say about ENSO?"
 
     test_paper_evidence = [
         {
             "paper_id": "enso_changes_global_warming",
-            "page": 1,
-            "text": (
-                "Example evidence from the paper discussing "
-                "changes in ENSO under global warming."
-            )
-        },
-        {
-            "paper_id": "enso_changes_global_warming",
             "page": 3,
             "text": (
-                "Example evidence describing projected changes "
-                "in ENSO characteristics."
+                "Example evidence: projections of ENSO "
+                "under global warming remain uncertain."
             )
         }
     ]
