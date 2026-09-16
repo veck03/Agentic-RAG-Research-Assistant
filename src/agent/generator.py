@@ -35,7 +35,13 @@ STRICT RULES:
 - Do not cite evidence that is irrelevant to the claim.
 - Use data evidence only for the dataset values it provides.
 - Clearly distinguish literature findings from dataset results.
-- If evidence is insufficient, say so explicitly.
+- First determine whether the supplied evidence actually answers the question.
+- If evidence is insufficient, clearly state what cannot be established.
+- Answer only the parts of the question supported by evidence.
+- Do not treat a retrieved passage as proof unless it supports the claim.
+- If paper evidence is absent, do not make paper-based claims.
+- If data evidence is absent, do not invent dataset values.
+- If evidence is relevant but incomplete, provide the supported information and identify the gap.
 - Do not make unsupported claims.
 - Keep the answer concise and scientifically precise.
 
@@ -134,6 +140,15 @@ def generate_answer(
     paper_evidence = paper_evidence or []
     data_evidence = data_evidence or {}
 
+    if not has_usable_evidence(
+        paper_evidence,
+        data_evidence
+    ):
+        return (
+            "I could not find relevant evidence in the "
+            "available papers or dataset to answer this question."
+        )
+
     tagged_papers, source_map = prepare_paper_evidence(
         paper_evidence
     )
@@ -181,6 +196,29 @@ Do not create author-year-page citations.
 
 
 if __name__ == "__main__":
+
+    print("\n===== EVIDENCE CHECK TESTS =====")
+
+    print(
+        "No evidence:",
+        has_usable_evidence([], {})
+    )
+
+    print(
+        "Paper evidence:",
+        has_usable_evidence(
+            [{"paper_id": "test", "page": 1, "text": "test"}],
+            {}
+        )
+    )
+
+    print(
+        "Data evidence:",
+        has_usable_evidence(
+            [],
+            {"operation": "average_temperature", "result": 27.8}
+        )
+    )
 
     test_query = "What does the evidence say about ENSO?"
 
