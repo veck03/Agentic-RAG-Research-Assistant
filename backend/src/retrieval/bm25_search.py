@@ -5,7 +5,8 @@ from pathlib import Path
 from rank_bm25 import BM25Okapi
 
 
-CHUNKS_FILE = Path("data/processed/chunks.jsonl")
+BASE_DIR = Path(__file__).resolve().parents[2]
+CHUNKS_FILE = BASE_DIR / "data" / "processed" / "chunks.jsonl"
 
 
 def load_chunks():

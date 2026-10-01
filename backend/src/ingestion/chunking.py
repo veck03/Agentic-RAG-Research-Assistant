@@ -3,8 +3,9 @@ import re
 from pathlib import Path
 
 
-INPUT_DIR = Path("data/processed")
-OUTPUT_FILE = Path("data/processed/chunks.jsonl")
+BASE_DIR = Path(__file__).resolve().parents[2]
+INPUT_DIR = BASE_DIR / "data" / "processed"
+OUTPUT_FILE = BASE_DIR / "data" / "processed" / "chunks.jsonl"
 
 CHUNK_SIZE = 600
 OVERLAP = 100

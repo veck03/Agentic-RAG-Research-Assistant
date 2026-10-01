@@ -1,8 +1,18 @@
+import sys
+from pathlib import Path
+
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+REPO_ROOT = BACKEND_DIR.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.agent.orchestrator import run_agent
-from src.api.schemas import QueryRequest, QueryResponse
+from backend.src.agent.orchestrator import run_agent
+from backend.src.api.schemas import QueryRequest, QueryResponse
 
 
 app = FastAPI(

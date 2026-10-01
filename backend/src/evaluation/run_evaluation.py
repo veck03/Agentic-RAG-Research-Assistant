@@ -1,13 +1,21 @@
+import sys
 import time
 import json
 import re
 from pathlib import Path
 
-from src.agent.orchestrator import run_agent
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+REPO_ROOT = BACKEND_DIR.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from backend.src.agent.orchestrator import run_agent
 
 
-# Paths are resolved from the project root.
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+# Paths are resolved from backend root.
+PROJECT_ROOT = BACKEND_DIR
 TEST_CASES_PATH = PROJECT_ROOT / "src" / "evaluation" / "test_cases.json"
 
 

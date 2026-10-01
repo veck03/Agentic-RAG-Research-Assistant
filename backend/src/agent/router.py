@@ -1,8 +1,11 @@
 import json
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 from groq import Groq
+
+BASE_DIR = Path(__file__).resolve().parents[2]
 
 
 # ============================================================
@@ -16,7 +19,7 @@ MODEL_NAME = "qwen/qwen3.8-27b"
 # LOAD ENVIRONMENT
 # ============================================================
 
-load_dotenv()
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 api_key = os.getenv("GROQ_API_KEY")
 

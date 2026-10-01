@@ -1,11 +1,13 @@
 
 #root {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .app-shell {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
+  overflow: hidden;
   background: #f8f9fb;
   color: #17212e;
 }
@@ -13,13 +15,15 @@
 /* Sidebar */
 .sidebar {
   width: 258px;
-  min-height: 100vh;
+  height: 100vh;
   padding: 25px 16px 18px;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   background: #142333;
   color: #eaf0f5;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .brand {
@@ -168,13 +172,17 @@
 /* Main workspace */
 .main-panel {
   min-width: 0;
-  min-height: 100vh;
+  height: 100vh;
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   height: 61px;
   display: flex;
   align-items: center;
@@ -182,6 +190,7 @@
   padding: 0 38px;
   border-bottom: 1px solid #e9edf1;
   background: #ffffff;
+  flex-shrink: 0;
 }
 
 .breadcrumb {

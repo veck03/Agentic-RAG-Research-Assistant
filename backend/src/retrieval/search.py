@@ -1,8 +1,10 @@
+from pathlib import Path
+
 import chromadb
 from sentence_transformers import SentenceTransformer
 
-
-DB_DIR = "data/vector_db"
+BASE_DIR = Path(__file__).resolve().parents[2]
+DB_DIR = str(BASE_DIR / "data" / "vector_db")
 COLLECTION_NAME = "ocean_papers"
 MODEL_NAME = "all-MiniLM-L6-v2"
 

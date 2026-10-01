@@ -3,7 +3,8 @@ from pathlib import Path
 import pandas as pd
 
 
-DATA_FILE = Path("data/ocean/sample_ocean_data.csv")
+BASE_DIR = Path(__file__).resolve().parents[2]
+DATA_FILE = BASE_DIR / "data" / "ocean" / "sample_ocean_data.csv"
 
 
 class OceanDataTool:
@@ -14,9 +15,9 @@ class OceanDataTool:
     instead of asking the LLM to calculate values itself.
     """
 
-    def __init__(self, data_file=DATA_FILE):
+    def __init__(self, data_file=None):
 
-        self.data_file = data_file
+        self.data_file = data_file or DATA_FILE
 
         self.df = pd.read_csv(
             self.data_file,

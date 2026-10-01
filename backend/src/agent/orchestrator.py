@@ -1,17 +1,25 @@
-from src.agent.router import route_query
-from src.retrieval.hybrid_search import hybrid_search
-from src.data_tools.ocean_data import OceanDataTool
-from src.agent.data_agent import parse_data_query
-from src.agent.generator import generate_answer
+import sys
+from pathlib import Path
+
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+REPO_ROOT = BACKEND_DIR.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from backend.src.agent.router import route_query
+from backend.src.retrieval.hybrid_search import hybrid_search
+from backend.src.data_tools.ocean_data import OceanDataTool
+from backend.src.agent.data_agent import parse_data_query
+from backend.src.agent.generator import generate_answer
 
 
 # ============================================================
 # INITIALIZE DATA TOOL
 # ============================================================
 
-ocean_data_tool = OceanDataTool(
-    "data/ocean/sample_ocean_data.csv"
-)
+ocean_data_tool = OceanDataTool()
 
 
 # ============================================================

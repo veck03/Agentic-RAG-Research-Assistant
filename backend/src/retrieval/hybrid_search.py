@@ -1,3 +1,13 @@
+import sys
+from pathlib import Path
+
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+REPO_ROOT = BACKEND_DIR.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
 import json
 import re
 
@@ -5,15 +15,15 @@ import chromadb
 from rank_bm25 import BM25Okapi
 from sentence_transformers import SentenceTransformer, CrossEncoder
 
-from src.retrieval.reranker import rerank_results
+from backend.src.retrieval.reranker import rerank_results
 
 
 # ============================================================
 # CONFIGURATION
 # ============================================================
 
-CHUNKS_FILE = "data/processed/chunks.jsonl"
-DB_DIR = "data/vector_db"
+CHUNKS_FILE = BACKEND_DIR / "data" / "processed" / "chunks.jsonl"
+DB_DIR = str(BACKEND_DIR / "data" / "vector_db")
 
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"

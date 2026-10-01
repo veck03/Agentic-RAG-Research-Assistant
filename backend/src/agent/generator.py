@@ -2,12 +2,13 @@
 import json
 import os
 import re
+from pathlib import Path
 
 from dotenv import load_dotenv
 from groq import Groq
 
-
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parents[2]
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 MODEL_NAME = "qwen/qwen3.8-27b"
 

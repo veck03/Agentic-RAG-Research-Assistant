@@ -5,8 +5,9 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 
 
-CHUNKS_FILE = Path("data/processed/chunks.jsonl")
-DB_DIR = "data/vector_db"
+BASE_DIR = Path(__file__).resolve().parents[2]
+CHUNKS_FILE = BASE_DIR / "data" / "processed" / "chunks.jsonl"
+DB_DIR = str(BASE_DIR / "data" / "vector_db")
 
 MODEL_NAME = "all-MiniLM-L6-v2"
 COLLECTION_NAME = "ocean_papers"

@@ -2,8 +2,9 @@ import fitz
 from pathlib import Path
 
 
-PAPERS_DIR = Path("data/papers")
-OUTPUT_DIR = Path("data/processed")
+BASE_DIR = Path(__file__).resolve().parents[2]
+PAPERS_DIR = BASE_DIR / "data" / "papers"
+OUTPUT_DIR = BASE_DIR / "data" / "processed"
 
 
 def extract_text_from_pdf(pdf_path):
