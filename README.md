@@ -87,7 +87,7 @@ The project was evaluated using a set of 11 test cases.
 | Retrieval Hit@5             |          100% |
 | Mean Reciprocal Rank        |         0.917 |
 | Data answer correctness     |         2 / 2 |
-| Average latency             | 33.98 seconds |
+| Average latency             | 8.98 seconds |
 
 These results reflect the current evaluation set and test environment. They should not be interpreted as guarantees of performance on arbitrary research questions or larger datasets.
 
@@ -216,4 +216,4 @@ The response includes the selected route, generated answer, paper evidence, and 
 
 ## License
 
-Add a license if you intend to make the repository open source. If the project is for portfolio demonstration only, specify the intended usage and licensing terms.
+Will be updated soon.

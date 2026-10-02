@@ -1,7 +1,36 @@
-.venv/
-__pycache__/
-*.pyc
-.env
-data/
-.vscode/
 .ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Frontend
+node_modules/
+dist/
+npm-debug.log*
+
+# Generated vector database and model files
+backend/data/vector_db/
+*.faiss
+*.pkl
+
+# Local research PDFs
+backend/data/papers/*.pdf
+
+# Temporary evaluation output
+backend/src/evaluation/evaluation_output/
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
