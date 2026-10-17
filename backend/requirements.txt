@@ -1,0 +1,5 @@
+# PDF text and metadata extraction, with page-aware access.
+PyMuPDF>=1.24,<2.0
+
+# Required when accepting PDF uploads through FastAPI form/file endpoints.
+python-multipart>=0.0.9,<1.0
